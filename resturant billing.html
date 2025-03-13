@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Billing System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://source.unsplash.com/1600x900/?restaurant,food') no-repeat center center/cover;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+        }
+        main {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+        }
+        section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #c9302c;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .remove-btn {
+            background-color: #ff0000;
+            font-size: 14px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Our Restaurant</h1>
+    </header>
+    <main>
+        <section id="menu">
+            <h2>Menu</h2>
+            <ul id="menu-items">
+                <li data-price="80">Burger - ₹80 <input type="number" id="qty-burger" value="1" min="1"> <button onclick="addToBill(80, 'Burger', 'qty-burger')">Add</button></li>
+                <li data-price="120">Pizza - ₹120 <input type="number" id="qty-pizza" value="1" min="1"> <button onclick="addToBill(120, 'Pizza', 'qty-pizza')">Add</button></li>
+                <li data-price="60">Pasta - ₹60 <input type="number" id="qty-pasta" value="1" min="1"> <button onclick="addToBill(60, 'Pasta', 'qty-pasta')">Add</button></li>
+            </ul>
+        </section>
+        <section id="billing">
+            <h2>Billing</h2>
+            <ul id="bill-items"></ul>
+            <p>Subtotal: ₹<span id="subtotal">0</span></p>
+            <p>Tax (5%): ₹<span id="tax">0</span></p>
+            <p>Discount: ₹<span id="discount">0</span></p>
+            <p><strong>Total: ₹<span id="total">0</span></strong></p>
+            <input type="number" id="discount-input" placeholder="Enter discount %" min="0" max="100">
+            <button onclick="applyDiscount()">Apply Discount</button>
+            <button onclick="checkout()">Checkout</button>
+            <button onclick="printBill()">Print Bill</button>
+        </section>
+    </main>
+    <script>
+        let subtotal = 0;
+        let total = 0;
+        let orders = [];
+
+        function addToBill(price, item, qtyId) {
+            let qty = document.getElementById(qtyId).value;
+            let totalItemPrice = price * qty;
+            subtotal += totalItemPrice;
+            updateBill();
+
+            let billList = document.getElementById('bill-items');
+            let listItem = document.createElement('li');
+            listItem.innerHTML = `${item} x ${qty} - ₹${totalItemPrice} <button class='remove-btn' onclick='removeItem(this, ${totalItemPrice})'>Remove</button>`;
+            billList.appendChild(listItem);
+
+            orders.push({ item, price, qty });
+        }
+
+        function removeItem(element, price) {
+            subtotal -= price;
+            element.parentElement.remove();
+            updateBill();
+        }
+
+        function applyDiscount() {
+            let discountPercent = document.getElementById('discount-input').value;
+            let discountAmount = (subtotal * discountPercent) / 100;
+            let tax = subtotal * 0.05;
+            total = subtotal + tax - discountAmount;
+            document.getElementById('discount').innerText = discountAmount.toFixed(2);
+            document.getElementById('tax').innerText = tax.toFixed(2);
+            document.getElementById('total').innerText = total.toFixed(2);
+        }
+
+        function updateBill() {
+            let tax = subtotal * 0.05;
+            total = subtotal + tax;
+            document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('tax').innerText = tax.toFixed(2);
+            document.getElementById('total').innerText = total.toFixed(2);
+        }
+
+        function checkout() {
+            alert('Thank you for dining with us! Your total bill is ₹' + total.toFixed(2));
+            location.reload();
+        }
+
+        function printBill() {
+            let billContent = '<div class="print-section"><h2>Restaurant Bill</h2><ul>';
+            orders.forEach(order => {
+                billContent += `<li>${order.item} x ${order.qty} - ₹${order.price * order.qty}</li>`;
+            });
+            billContent += `</ul><p><strong>Total: ₹${total.toFixed(2)}</strong></p></div>`;
+            let printWindow = window.open('', '', 'width=600,height=400');
+            printWindow.document.write('<html><head><title>Print Bill</title></head><body>' + billContent + '</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
